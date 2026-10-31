@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL.h>
 
 class Vehicle
 {
@@ -8,6 +9,9 @@ private:
 	float speed;
 
 public:
+	static constexpr int WIDTH = 30;  // Width of the vehicle
+	static constexpr int HEIGHT = 60; // Height of the vehicle
+
 	Vehicle(float x, float y, float speed);
 
 	//Public Getter and Setter methods for x, y, and speed
@@ -19,5 +23,6 @@ public:
 	void setY(float newY);
 	void setSpeed(float newSpeed);
 
-	void move(float deltaTime);
+	//void move(float deltaTime, const Uint8* keyboardState);
+	void move(float deltaTime, float directionX, float directionY);
 };

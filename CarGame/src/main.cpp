@@ -1,8 +1,10 @@
-#include "vehicle.h"
-#include <iostream>
-
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
+
+#include "vehicle.h"
+#include "game_config.h"
+#include <iostream>
+
 using namespace std;
 
 int main() {
@@ -19,8 +21,8 @@ int main() {
 		"Car Racing Game", 
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
-		1280,
-		720,
+		GameConfig::WINDOW_WIDTH,
+		GameConfig::WINDOW_HEIGHT,
 		SDL_WINDOW_SHOWN
 	);
 
@@ -61,13 +63,33 @@ int main() {
 		Uint32 currentTime = SDL_GetTicks();
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
-		//car.move(0.016f); // Move the car with a delta time of 16 milliseconds (~60 FPS)
-		car.move(deltaTime);
+		const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
+		
+		float directionX = 0.0f;
+		float directionY = 0.0f;
+
+		if (keyboardState[SDL_SCANCODE_UP]) directionY = -1.0f; // Move up
+		if (keyboardState[SDL_SCANCODE_DOWN]) directionY = 1.0f; // Move down
+		if (keyboardState[SDL_SCANCODE_LEFT]) directionX = -1.0f; // Move left
+		if (keyboardState[SDL_SCANCODE_RIGHT]) directionX = 1.0f; // Move right
+
+		car.move(deltaTime, directionX, directionY);
 
 		SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); // Set draw color to black
-		SDL_RenderClear(renderer); // Clear the screen with the draw color
+		SDL_RenderClear(renderer); // Clear the screen with the draw 
+		
+		//Road Surface
+		SDL_Rect roadRect = { GameConfig::ROAD_X, 0, GameConfig::ROAD_WIDTH, GameConfig::WINDOW_HEIGHT };
+		SDL_SetRenderDrawColor(renderer, 55, 55, 55, 255);
+		SDL_RenderFillRect(renderer, &roadRect); // Draw the road as a rectangle
 
-		SDL_Rect carRect = { static_cast<int>(car.getX()), static_cast<int>(car.getY()), 60, 30 };
+		// Road Boundaries
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set draw color to white
+		SDL_RenderDrawLine(renderer, GameConfig::ROAD_X, 0, GameConfig::ROAD_X, GameConfig::WINDOW_HEIGHT); // Left boundary
+		SDL_RenderDrawLine(renderer, GameConfig::ROAD_X + GameConfig::ROAD_WIDTH, 0, GameConfig::ROAD_X + GameConfig::ROAD_WIDTH, GameConfig::WINDOW_HEIGHT); // Right Boundary
+
+		// Car Rendering
+		SDL_Rect carRect = { static_cast<int>(car.getX()), static_cast<int>(car.getY()), Vehicle::WIDTH, Vehicle::HEIGHT };
 
 		SDL_SetRenderDrawColor(renderer, 220, 40, 40, 255); // Set draw color to red
 		SDL_RenderFillRect(renderer, &carRect); // Draw the car as a rectangle
