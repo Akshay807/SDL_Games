@@ -49,6 +49,7 @@ int main() {
 	SDL_Event event;
 
 	Uint32 lastTime = SDL_GetTicks();
+	float roadOffset = 0.0f;
 
 	while (isRunning) // Game Loop
 	{
@@ -63,6 +64,13 @@ int main() {
 		Uint32 currentTime = SDL_GetTicks();
 		float deltaTime = (currentTime - lastTime) / 1000.0f;
 		lastTime = currentTime;
+
+		roadOffset += 200.0f * deltaTime;
+		if (roadOffset >= GameConfig::DASH_HEIGHT + GameConfig::DASH_GAP)
+		{
+			roadOffset -= GameConfig::DASH_HEIGHT + GameConfig::DASH_GAP;
+		}
+
 		const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
 		
 		float directionX = 0.0f;
@@ -88,6 +96,15 @@ int main() {
 		SDL_RenderDrawLine(renderer, GameConfig::ROAD_X, 0, GameConfig::ROAD_X, GameConfig::WINDOW_HEIGHT); // Left boundary
 		SDL_RenderDrawLine(renderer, GameConfig::ROAD_X + GameConfig::ROAD_WIDTH, 0, GameConfig::ROAD_X + GameConfig::ROAD_WIDTH, GameConfig::WINDOW_HEIGHT); // Right Boundary
 
+		// Lane Divider + Road Movement
+		int laneDividerX = GameConfig::ROAD_X + GameConfig::LANE_WIDTH;
+		int patternHeight = GameConfig::DASH_HEIGHT + GameConfig::DASH_GAP;
+		for (int y = -patternHeight; y < GameConfig::WINDOW_HEIGHT; y += patternHeight)
+		{
+			int dashY = y + static_cast<int>(roadOffset);
+			SDL_RenderDrawLine(renderer, laneDividerX, dashY, laneDividerX, dashY + GameConfig::DASH_HEIGHT);
+		}
+		
 		// Car Rendering
 		SDL_Rect carRect = { static_cast<int>(car.getX()), static_cast<int>(car.getY()), Vehicle::WIDTH, Vehicle::HEIGHT };
 
