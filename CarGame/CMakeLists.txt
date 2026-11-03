@@ -13,7 +13,9 @@ find_package(SDL2_mixer CONFIG REQUIRED)
 
 add_executable(CarGame
     src/main.cpp
+    src/game.cpp
     src/vehicle.cpp
+    src/road.cpp
 )
 target_include_directories(CarGame
     PRIVATE
