@@ -58,51 +58,66 @@ Game::~Game()
 	SDL_Quit();
 }
 
+void Game::handleEvents(float& directionX, float& directionY)
+{
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		if (event.type == SDL_QUIT)
+		{
+			isRunning = false;
+		}
+	}
+
+	const Uint8* keyboardState = SDL_GetKeyboardState(nullptr);
+
+	directionX = 0.0f;
+	directionY = 0.0f;
+
+	if (keyboardState[SDL_SCANCODE_UP]) directionY = -1.0f; // Move up
+	if (keyboardState[SDL_SCANCODE_DOWN]) directionY = 1.0f; // Move down
+	if (keyboardState[SDL_SCANCODE_LEFT]) directionX = -1.0f; // Move left
+	if (keyboardState[SDL_SCANCODE_RIGHT]) directionX = 1.0f; // Move right
+}
+
+void Game::update(float deltaTime, float directionX, float directionY)
+{
+	car.move(deltaTime, directionX, directionY);
+	road.update(deltaTime);
+}
+
+void Game::render()
+{
+	SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+	SDL_RenderClear(renderer);
+	road.render(renderer);
+
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Set draw color to red
+	SDL_Rect carRect = { static_cast<int>(car.getX()), static_cast<int>(car.getY()), Vehicle::WIDTH, Vehicle::HEIGHT };
+	SDL_RenderFillRect(renderer, &carRect); // Draw the car
+	SDL_RenderPresent(renderer);
+}
+
 void Game::run()
 {
 	if (renderer == nullptr) return; // Ensure renderer is valid before proceeding
 
-	bool isRunning = true;
-	SDL_Event event;
+	isRunning = true;
 	Uint32 lastTime = SDL_GetTicks();
 
 	while (isRunning) // Game Loop
 	{
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT)
-			{
-				isRunning = false;
-			}
-		}
+		float directionX = 0.0f;
+		float directionY = 0.0f;
+
+		handleEvents(directionX, directionY);
 
 		Uint32 currentTime = SDL_GetTicks();
 		float deltaTime = (currentTime - lastTime) / 1000.0f; // Convert milliseconds to seconds
 		lastTime = currentTime;
 
-		const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
-	
-		float directionX = 0.0f;
-		float directionY = 0.0f;
-
-		if (keyboardState[SDL_SCANCODE_UP]) directionY = -1.0f; // Move up
-		if (keyboardState[SDL_SCANCODE_DOWN]) directionY = 1.0f; // Move down
-		if (keyboardState[SDL_SCANCODE_LEFT]) directionX = -1.0f; // Move left
-		if (keyboardState[SDL_SCANCODE_RIGHT]) directionX = 1.0f; // Move right
-
-		car.move(deltaTime, directionX, directionY);
-		road.update(deltaTime);
-		SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-		SDL_RenderClear(renderer);
-		road.render(renderer);
-		
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Set draw color to red
-		SDL_Rect carRect = { static_cast<int>(car.getX()), static_cast<int>(car.getY()), Vehicle::WIDTH, Vehicle::HEIGHT };
-
-		SDL_RenderFillRect(renderer, &carRect); // Draw the car
-
-		SDL_RenderPresent(renderer);
-
-		//SDL_Delay(16); // Delay to simulate ~60 FPS)
+		update(deltaTime, directionX, directionY);
+		render();
+		SDL_Delay(16); // Delay to cap the frame rate (approx. 60 FPS)
 	}
 }

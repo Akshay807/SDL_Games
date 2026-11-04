@@ -12,6 +12,12 @@ private:
 	Vehicle car;
 	Road road;
 
+	bool isRunning;
+
+	void update(float deltaTime, float directionX, float directionY);
+	void handleEvents(float& directionX, float& directionY);
+	void render();
+
 public:
 	Game::Game();
 	~Game();
